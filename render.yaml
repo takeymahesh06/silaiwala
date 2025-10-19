@@ -1,0 +1,76 @@
+services:
+  # Backend Django API
+  - type: web
+    name: silaiwala-backend
+    env: python
+    plan: free
+    buildCommand: |
+      cd backend
+      pip install -r requirements.txt
+      python manage.py migrate
+      python manage.py populate_sample_users
+    startCommand: |
+      cd backend
+      gunicorn silaiwala_backend.wsgi:application
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: silaiwala-backend.onrender.com
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: silaiwala-db
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: silaiwala-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: silaiwala-db
+          property: password
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: silaiwala-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: silaiwala-db
+          property: port
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: silaiwala-redis
+          property: connectionString
+
+  # Frontend NextJS App
+  - type: web
+    name: silaiwala-frontend
+    env: static
+    plan: free
+    buildCommand: |
+      cd frontend
+      npm install
+      npm run build
+    staticPublishPath: ./frontend/out
+    envVars:
+      - key: NEXT_PUBLIC_DJANGO_API_URL
+        fromService:
+          type: web
+          name: silaiwala-backend
+          envVarKey: RENDER_EXTERNAL_URL
+
+  # PostgreSQL Database
+  - type: pserv
+    name: silaiwala-db
+    env: postgresql
+    plan: free
+    ipAllowList: []
+
+  # Redis Cache
+  - type: redis
+    name: silaiwala-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
