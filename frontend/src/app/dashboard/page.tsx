@@ -17,7 +17,8 @@ import {
   LogOut,
   Bell,
   Search,
-  Filter
+  Filter,
+  Ruler
 } from 'lucide-react';
 
 interface User {
@@ -456,16 +457,22 @@ export default function Dashboard() {
               
               {user.role === 'tailor' && (
                 <>
-                  <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
+                  <button 
+                    onClick={() => router.push('/tailor/orders')}
+                    className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
+                  >
                     <div className="flex items-center">
-                      <Calendar className="h-5 w-5 text-blue-600 mr-3" />
-                      <span>View My Appointments</span>
+                      <Package className="h-5 w-5 text-blue-600 mr-3" />
+                      <span>View My Orders</span>
                     </div>
                   </button>
-                  <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
+                  <button 
+                    onClick={() => router.push('/tailor/measurements')}
+                    className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
+                  >
                     <div className="flex items-center">
-                      <Package className="h-5 w-5 text-green-600 mr-3" />
-                      <span>Update Order Status</span>
+                      <Ruler className="h-5 w-5 text-green-600 mr-3" />
+                      <span>Update Measurements</span>
                     </div>
                   </button>
                 </>
@@ -482,7 +489,10 @@ export default function Dashboard() {
                       <span>Book Appointment</span>
                     </div>
                   </button>
-                  <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
+                  <button 
+                    onClick={() => router.push('/track')}
+                    className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
+                  >
                     <div className="flex items-center">
                       <Package className="h-5 w-5 text-green-600 mr-3" />
                       <span>Track Orders</span>
