@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, User, Phone, Mail, MapPin, Scissors, Filter, Search, Eye, Edit, Trash2, Plus } from 'lucide-react';
+import AuthGuard from '@/components/AuthGuard';
 
 interface Appointment {
   id: number;
@@ -208,7 +209,8 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AuthGuard requiredRole="admin">
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -487,6 +489,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AuthGuard>
   );
 }
