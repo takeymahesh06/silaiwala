@@ -54,15 +54,64 @@ export default function BookAppointment() {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL || 'http://localhost:8000';
       
-      // Here you would make the actual API call to create an appointment
-      console.log('Appointment data:', formData);
+      // Create appointment
+      const appointmentResponse = await fetch(`${API_URL}/api/appointments/appointments/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customer_name: formData.name,
+          customer_email: formData.email,
+          customer_phone: formData.phone,
+          service_type: formData.service,
+          preferred_date: formData.date,
+          preferred_time: formData.time,
+          address: formData.address,
+          notes: formData.notes,
+          status: 'pending'
+        }),
+      });
+
+      if (!appointmentResponse.ok) {
+        throw new Error('Failed to create appointment');
+      }
+
+      const appointmentData = await appointmentResponse.json();
+      
+      // Create order after appointment is created
+      const orderResponse = await fetch(`${API_URL}/api/orders/orders/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appointment: appointmentData.id,
+          customer_name: formData.name,
+          customer_email: formData.email,
+          customer_phone: formData.phone,
+          service_type: formData.service,
+          status: 'pending',
+          total_amount: 0, // Will be calculated later
+          notes: formData.notes
+        }),
+      });
+
+      if (!orderResponse.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      const orderData = await orderResponse.json();
+      
+      console.log('Appointment created:', appointmentData);
+      console.log('Order created:', orderData);
       
       setIsSubmitted(true);
     } catch (error) {
       console.error('Error booking appointment:', error);
+      alert('Failed to book appointment. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
