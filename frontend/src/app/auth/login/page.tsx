@@ -34,11 +34,17 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500">
               Register here
+            </Link>
+          </p>
+          <p className="text-sm text-gray-600">
+            Admin access?{' '}
+            <Link href="/auth/admin-login" className="font-medium text-red-600 hover:text-red-500">
+              Admin Login
             </Link>
           </p>
         </div>

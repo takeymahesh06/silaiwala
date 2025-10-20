@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Users, 
@@ -11,13 +11,10 @@ import {
   Star, 
   Clock, 
   CheckCircle,
-  AlertCircle,
   UserCheck,
   Settings,
   LogOut,
   Bell,
-  Search,
-  Filter,
   Ruler
 } from 'lucide-react';
 
@@ -52,7 +49,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState<DashboardStats>({});
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  // const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
 
   useEffect(() => {
@@ -70,9 +67,42 @@ export default function Dashboard() {
     
     // Fetch dashboard stats
     fetchDashboardStats();
-  }, []);
+  }, [fetchDashboardStats]);
 
-  const fetchDashboardStats = async () => {
+  const getMockStats = useCallback((): DashboardStats => {
+    if (user?.role === 'admin') {
+      return {
+        total_users: 25,
+        total_customers: 15,
+        total_tailors: 6,
+        total_staff: 4,
+        verified_users: 20,
+        active_users: 22
+      };
+    } else if (user?.role === 'staff') {
+      return {
+        total_customers: 15,
+        total_tailors: 6,
+        verified_users: 5,
+        active_users: 4
+      };
+    } else if (user?.role === 'tailor') {
+      return {
+        total_orders: 45,
+        rating: 4.8,
+        experience_years: 5,
+        hourly_rate: 500
+      };
+    } else {
+      return {
+        total_spent: 2500,
+        loyalty_points: 150,
+        preferred_contact_method: 'phone'
+      };
+    }
+  }, [user?.role]);
+
+  const fetchDashboardStats = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:8000/api/users/dashboard/stats/');
       if (response.ok) {
@@ -88,43 +118,8 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getMockStats]);
 
-  const getMockStats = (): DashboardStats => {
-    if (user?.role === 'admin') {
-      return {
-        total_users: 25,
-        total_customers: 15,
-        total_tailors: 6,
-        total_staff: 4,
-        verified_users: 20,
-        active_users: 22
-      };
-    } else if (user?.role === 'staff') {
-      return {
-        total_customers: 15,
-        total_tailors: 6,
-        verified_tailors: 5,
-        available_tailors: 4
-      };
-    } else if (user?.role === 'tailor') {
-      return {
-        total_orders: 45,
-        rating: 4.8,
-        experience_years: 8,
-        hourly_rate: 500,
-        is_available: true
-      };
-    } else if (user?.role === 'customer') {
-      return {
-        total_orders: 12,
-        total_spent: 15000,
-        loyalty_points: 150,
-        preferred_contact_method: 'phone'
-      };
-    }
-    return {};
-  };
 
   const handleLogout = () => {
     // In real app, clear auth token and redirect
@@ -299,7 +294,7 @@ export default function Dashboard() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Verified Tailors</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.verified_tailors}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.verified_users}</p>
                   </div>
                 </div>
               </div>
@@ -310,7 +305,7 @@ export default function Dashboard() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Available</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.available_tailors}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.active_users}</p>
                   </div>
                 </div>
               </div>

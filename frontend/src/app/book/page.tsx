@@ -127,7 +127,7 @@ export default function BookAppointment() {
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Appointment Booked!</h1>
             <p className="text-lg text-gray-600 mb-6">
-              Thank you for booking an appointment with SilaiWala. We'll contact you shortly to confirm the details.
+              Thank you for booking an appointment with SilaiWala. We&apos;ll contact you shortly to confirm the details.
             </p>
             <div className="bg-blue-50 rounded-lg p-6 mb-6">
               <h3 className="font-semibold text-gray-900 mb-2">Appointment Details:</h3>

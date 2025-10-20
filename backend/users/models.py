@@ -24,6 +24,16 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # Override Django's default is_staff and is_superuser to work with our custom model
+    is_staff = models.BooleanField(
+        default=False,
+        help_text='Designates whether the user can log into this admin site.',
+    )
+    is_superuser = models.BooleanField(
+        default=False,
+        help_text='Designates that this user has all permissions without explicitly assigning them.',
+    )
+    
     # Fix reverse accessor conflicts
     groups = models.ManyToManyField(
         'auth.Group',
@@ -52,10 +62,6 @@ class User(AbstractUser):
     @property
     def is_tailor(self):
         return self.role == 'tailor'
-    
-    @property
-    def is_staff(self):
-        return self.role == 'staff'
     
     @property
     def is_admin(self):

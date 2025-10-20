@@ -60,9 +60,14 @@ export default function AuthGuard({
 
       // Check role requirements
       if (requiredRole && currentUser.role !== requiredRole) {
-        setError(`Access denied. ${requiredRole} role required.`);
-        setLoading(false);
-        return;
+        // Allow superusers to access admin routes
+        if (requiredRole === 'admin' && currentUser.is_superuser) {
+          // Superuser can access admin routes
+        } else {
+          setError(`Access denied. ${requiredRole} role required.`);
+          setLoading(false);
+          return;
+        }
       }
 
       setLoading(false);
