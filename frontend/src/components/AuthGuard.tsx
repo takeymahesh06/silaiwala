@@ -1,8 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, Shield } from 'lucide-react';
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: 'admin' | 'staff' | 'tailor' | 'customer';
+  is_verified: boolean;
+  is_superuser?: boolean;
+}
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -15,16 +26,12 @@ export default function AuthGuard({
   requiredRole, 
   fallbackUrl = '/' 
 }: AuthGuardProps) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       // Check if user is logged in
       const authToken = localStorage.getItem('auth_token');
@@ -36,7 +43,7 @@ export default function AuthGuard({
         return;
       }
 
-      const parsedUser = JSON.parse(userData);
+      // const parsedUser = JSON.parse(userData);
 
       // Verify token with backend
       const response = await fetch('http://localhost:8000/api/users/users/me/', {
@@ -76,7 +83,11 @@ export default function AuthGuard({
       setError('Authentication failed. Please try again.');
       setLoading(false);
     }
-  };
+  }, [requiredRole]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const handleLogin = () => {
     router.push('/auth/login');

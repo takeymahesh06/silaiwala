@@ -52,23 +52,6 @@ export default function Dashboard() {
   // const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
 
-  useEffect(() => {
-    // Simulate user authentication - in real app, get from auth context
-    const mockUser: User = {
-      id: 1,
-      username: 'admin',
-      email: 'admin@silaiwala.com',
-      first_name: 'Admin',
-      last_name: 'User',
-      role: 'admin',
-      is_verified: true
-    };
-    setUser(mockUser);
-    
-    // Fetch dashboard stats
-    fetchDashboardStats();
-  }, [fetchDashboardStats]);
-
   const getMockStats = useCallback((): DashboardStats => {
     if (user?.role === 'admin') {
       return {
@@ -120,9 +103,34 @@ export default function Dashboard() {
     }
   }, [getMockStats]);
 
+  useEffect(() => {
+    // Get user from localStorage (set by AuthGuard or login)
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        router.push('/auth/login');
+        return;
+      }
+    } else {
+      // No user data, redirect to login
+      router.push('/auth/login');
+      return;
+    }
+    
+    // Fetch dashboard stats
+    fetchDashboardStats();
+  }, [fetchDashboardStats, router]);
+
 
   const handleLogout = () => {
-    // In real app, clear auth token and redirect
+    // Clear authentication data
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    // Redirect to home page
     router.push('/');
   };
 
