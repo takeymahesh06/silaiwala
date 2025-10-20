@@ -9,7 +9,7 @@ from .otp_models import OTP, PhoneVerification
 class UserAdmin(BaseUserAdmin):
     """Admin configuration for User model"""
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_verified', 'is_active', 'created_at')
-    list_filter = ('role', 'is_verified', 'is_active', 'created_at')
+    list_filter = ('role', 'is_verified', 'is_active', 'is_superuser', 'created_at')
     search_fields = ('username', 'email', 'first_name', 'last_name', 'phone')
     ordering = ('-created_at',)
     

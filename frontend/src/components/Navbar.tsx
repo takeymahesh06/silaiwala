@@ -3,11 +3,22 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Menu, X, Scissors, User, LogOut } from 'lucide-react'
+import { Menu, X, Scissors, User, LogOut, ChevronDown } from 'lucide-react'
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  is_verified: boolean;
+}
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [showLoginDropdown, setShowLoginDropdown] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -17,6 +28,23 @@ export function Navbar() {
       setUser(JSON.parse(userData))
     }
   }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showLoginDropdown) {
+        const target = event.target as Element
+        if (!target.closest('.login-dropdown')) {
+          setShowLoginDropdown(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showLoginDropdown])
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token')
@@ -80,12 +108,46 @@ export function Navbar() {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link
-                  href="/auth/login"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Login
-                </Link>
+                {/* Login Dropdown */}
+                <div className="relative login-dropdown">
+                  <button
+                    onClick={() => setShowLoginDropdown(!showLoginDropdown)}
+                    className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    <span>Login</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  
+                  {showLoginDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                      <Link
+                        href="/auth/customer-login"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowLoginDropdown(false)}
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Customer Login
+                      </Link>
+                      <Link
+                        href="/auth/tailor-login"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowLoginDropdown(false)}
+                      >
+                        <Scissors className="h-4 w-4 mr-2" />
+                        Tailor Login
+                      </Link>
+                      <Link
+                        href="/auth/admin-login"
+                        className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        onClick={() => setShowLoginDropdown(false)}
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Admin Login
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                
                 <Link
                   href="/auth/register"
                   className="btn btn-primary btn-md"
@@ -146,16 +208,36 @@ export function Navbar() {
               </div>
             ) : (
               <div className="space-y-2 mt-4">
-                <Link
-                  href="/auth/login"
-                  className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Login
-                </Link>
+                <div className="px-3 py-2">
+                  <p className="text-sm font-medium text-gray-500 mb-2">Login Options:</p>
+                  <Link
+                    href="/auth/customer-login"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Customer Login</span>
+                  </Link>
+                  <Link
+                    href="/auth/tailor-login"
+                    className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Scissors className="h-5 w-5" />
+                    <span>Tailor Login</span>
+                  </Link>
+                  <Link
+                    href="/auth/admin-login"
+                    className="flex items-center space-x-2 text-red-600 hover:text-red-700 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Admin Login</span>
+                  </Link>
+                </div>
                 <Link
                   href="/auth/register"
-                  className="btn btn-primary btn-md w-full"
+                  className="btn btn-primary btn-md w-full mx-3"
                   onClick={() => setIsOpen(false)}
                 >
                   Sign Up
