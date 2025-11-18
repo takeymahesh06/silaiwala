@@ -9,6 +9,9 @@ from .serializers import (
     CustomerSerializer, AppointmentSerializer, AppointmentCreateSerializer,
     MeasurementSerializer, TailorSerializer, AvailableSlotsSerializer
 )
+from orders.models import Order, OrderItem
+from services.models import ServicePricing, PricingArea
+from django.db import transaction
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -102,6 +105,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment = self.get_object()
         appointment.status = 'confirmed'
         appointment.save()
+
+        # Create an order if one doesn't already exist for this appointment
+        self._ensure_order_for_appointment(appointment)
+
         serializer = self.get_serializer(appointment)
         return Response(serializer.data)
 
@@ -120,8 +127,78 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment = self.get_object()
         appointment.status = 'completed'
         appointment.save()
+        # Ensure order exists as well
+        self._ensure_order_for_appointment(appointment)
         serializer = self.get_serializer(appointment)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def create_order(self, request, pk=None):
+        """Explicitly create an order from an appointment (idempotent)."""
+        appointment = self.get_object()
+        order = self._ensure_order_for_appointment(appointment)
+        return Response({
+            'order_id': order.id,
+            'order_number': order.order_number,
+            'status': order.status,
+            'total_amount': str(order.total_amount)
+        })
+
+    @staticmethod
+    @transaction.atomic
+    def _ensure_order_for_appointment(appointment: Appointment) -> Order:
+        """Create an order (and default item) for the appointment if missing.
+
+        - Idempotent: returns existing order if already created
+        - Computes price using ServicePricing for customer's area if available
+        - Sets expected_delivery_date using service.estimated_days
+        """
+        existing = Order.objects.filter(appointment=appointment).first()
+        if existing:
+            return existing
+
+        # Determine unit price
+        unit_price = 0
+        service = appointment.service
+        try:
+            area = PricingArea.objects.get(name=appointment.customer.area)
+            pricing = ServicePricing.objects.filter(service=service, area=area).first()
+            if pricing:
+                unit_price = pricing.final_price
+        except PricingArea.DoesNotExist:
+            pricing = None
+
+        from datetime import timedelta
+        expected_delivery = appointment.scheduled_date + timedelta(days=getattr(service, 'estimated_days', 7))
+
+        # Create order with placeholder totals (will be updated after OrderItem)
+        order = Order.objects.create(
+            customer=appointment.customer,
+            appointment=appointment,
+            status='pending',
+            payment_status='pending',
+            total_amount=0,
+            expected_delivery_date=expected_delivery,
+            special_instructions=appointment.notes or ''
+        )
+
+        # Create a single order item for the booked service
+        OrderItem.objects.create(
+            order=order,
+            service=service,
+            service_pricing=pricing if pricing else ServicePricing.objects.filter(service=service).first(),
+            quantity=1,
+            unit_price=unit_price,
+            total_price=unit_price or 0,
+            specifications={},
+        )
+
+        # Update order total
+        total = sum(item.total_price for item in order.items.all())
+        order.total_amount = total
+        order.save()
+
+        return order
 
 
 class MeasurementViewSet(viewsets.ModelViewSet):

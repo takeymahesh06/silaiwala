@@ -33,7 +33,7 @@ export function Testimonials() {
             What Our Customers Say
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Don't just take our word for it. Here's what our satisfied customers have to say.
+            Don&rsquo;t just take our word for it. Here&rsquo;s what our satisfied customers have to say.
           </p>
         </div>
 
@@ -50,7 +50,7 @@ export function Testimonials() {
               </div>
               
               <p className="text-gray-600 mb-6 italic">
-                "{testimonial.text}"
+                &ldquo;{testimonial.text}&rdquo;
               </p>
               
               <div className="border-t pt-4">

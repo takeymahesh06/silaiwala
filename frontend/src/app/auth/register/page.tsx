@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserPlus, ArrowLeft, Clock, RefreshCw, CheckCircle } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 
 interface RegisterFormData {
   phone_number: string;
@@ -36,7 +37,7 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/auth/otp/send/', {
+      const response = await apiRequest('/api/users/auth/otp/send/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +85,7 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/auth/otp/verify/', {
+      const response = await apiRequest('/api/users/auth/otp/verify/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +101,7 @@ export default function RegisterPage() {
 
       if (response.ok) {
         // Now register the user
-        const registerResponse = await fetch('http://localhost:8000/api/users/auth/otp/register/', {
+        const registerResponse = await apiRequest('/api/users/auth/otp/register/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -148,7 +149,7 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/auth/otp/resend/', {
+      const response = await apiRequest('/api/users/auth/otp/resend/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

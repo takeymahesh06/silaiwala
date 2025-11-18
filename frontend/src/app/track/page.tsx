@@ -68,7 +68,7 @@ export default function TrackOrderPage() {
     setOrders([]);
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL || 'http://localhost:8000';
+      const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
       let url = `${API_URL}/api/orders/orders/`;
       
       if (searchType === 'phone') {

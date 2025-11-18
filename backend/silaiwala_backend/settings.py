@@ -26,7 +26,30 @@ SECRET_KEY = "django-insecure-x+cy)id2=)+96u!zy(l(zktdek%he##*zg(6y3doco42pe2jgv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1', 
+    '0.0.0.0',
+    'silaiwala-backend-v3-production.up.railway.app',
+    'silaiwala-backend-production.up.railway.app',
+    'silaiwala-frontend-new-production.up.railway.app',
+    'silaiwala-frontend-docker-production.up.railway.app',
+    'swaruchii.com',
+    'www.swaruchii.com',
+    '*.railway.app'
+]
+
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = [
+    'https://silaiwala-backend-v3-production.up.railway.app',
+    'https://silaiwala-backend-production.up.railway.app',
+    'https://silaiwala-frontend-new-production.up.railway.app',
+    'https://silaiwala-frontend-docker-production.up.railway.app',
+    'https://swaruchii.com',
+    'https://www.swaruchii.com',
+    'http://localhost:3000',
+    'http://localhost:8000',
+]
 
 
 # Application definition
@@ -46,6 +69,7 @@ INSTALLED_APPS = [
     "appointments",
     "orders",
     "users",
+    "ai_pricing",
 ]
 
 MIDDLEWARE = [
@@ -84,12 +108,8 @@ WSGI_APPLICATION = "silaiwala_backend.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "silaiwala_dev"),
-        "USER": os.getenv("POSTGRES_USER", "silaiwala_user"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "silaiwala_password"),
-        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
-        "PORT": os.getenv("POSTGRES_PORT", "5432"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -162,9 +182,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
+    "https://swaruchii.com",
+    "https://www.swaruchii.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files
 MEDIA_URL = '/media/'

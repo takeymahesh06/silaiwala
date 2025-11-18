@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL || 'http://localhost:8000';
+      const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
       const response = await fetch(`${API_URL}/api/users/auth/login/`, {
         method: 'POST',
         headers: {

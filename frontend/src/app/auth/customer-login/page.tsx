@@ -14,7 +14,7 @@ export default function CustomerLoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
 
-  const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL || 'http://localhost:8000';
+  const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Users, 
   UserPlus, 
@@ -57,19 +57,26 @@ export default function UserManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-
-  useEffect(() => {
-    fetchUsers();
-    fetchStats();
-  }, []);
-
-  const fetchUsers = async () => {
+  const [hasPermission, setHasPermission] = useState(true);
+  const apiBaseUrl = process.env.NEXT_PUBLIC_DJANGO_API_URL ?? 'http://localhost:8000';
+  
+  const fetchUsers = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/users/users/');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const response = await fetch(`${apiBaseUrl}/api/users/users/`, {
+        headers: {
+          'Authorization': token ? `Token ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.results || []);
+        setUsers(Array.isArray(data.results) ? data.results : data);
+      } else if (response.status === 403) {
+        console.error('Permission denied: Admin access required');
+        setUsers([]);
+        setHasPermission(false);
       } else {
         console.error('Failed to fetch users');
         setUsers(getMockUsers());
@@ -80,11 +87,11 @@ export default function UserManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiBaseUrl]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/users/dashboard/stats/');
+      const response = await fetch(`${apiBaseUrl}/api/users/dashboard/stats/`);
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -95,7 +102,12 @@ export default function UserManagement() {
       console.error('Error fetching stats:', error);
       setStats(getMockStats());
     }
-  };
+  }, [apiBaseUrl]);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchStats();
+  }, [fetchUsers, fetchStats]);
 
   const getMockUsers = (): UserData[] => [
     {
@@ -145,28 +157,28 @@ export default function UserManagement() {
     active_users: 22
   });
 
-  const handleUserAction = async (userId: number, action: string, data?: any) => {
+  const handleUserAction = async (userId: number, action: string, data?: Record<string, unknown>) => {
     try {
-      let response;
+      let response: Response | undefined;
       
       switch (action) {
         case 'verify':
-          response = await fetch(`http://localhost:8000/api/users/users/${userId}/verify_user/`, {
+          response = await fetch(`${apiBaseUrl}/api/users/users/${userId}/verify_user/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
           });
           break;
         case 'deactivate':
-          response = await fetch(`http://localhost:8000/api/users/users/${userId}/deactivate_user/`, {
+          response = await fetch(`${apiBaseUrl}/api/users/users/${userId}/deactivate_user/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
           });
           break;
         case 'update':
-          response = await fetch(`http://localhost:8000/api/users/users/${userId}/`, {
+          response = await fetch(`${apiBaseUrl}/api/users/users/${userId}/`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: data ? JSON.stringify(data) : undefined
           });
           break;
       }
@@ -226,6 +238,21 @@ export default function UserManagement() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading users...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasPermission) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <Shield className="h-8 w-8 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">You don&rsquo;t have permission to access user management.</p>
+          <p className="text-sm text-gray-500">Admin access is required to manage users.</p>
         </div>
       </div>
     );

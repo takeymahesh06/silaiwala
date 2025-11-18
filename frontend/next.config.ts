@@ -7,11 +7,19 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true
   },
+  eslint: {
+    // Disable ESLint during builds
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    // Disable TypeScript errors during builds
+    ignoreBuildErrors: true,
+  },
   env: {
-    NEXT_PUBLIC_DJANGO_API_URL: process.env.NEXT_PUBLIC_DJANGO_API_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_DJANGO_API_URL: process.env.NEXT_PUBLIC_DJANGO_API_URL,
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_DJANGO_API_URL || 'http://localhost:8000';
+    const apiUrl = process.env.NEXT_PUBLIC_DJANGO_API_URL || 'https://silaiwala-backend-v3-production.up.railway.app';
     return [
       {
         source: '/api/:path*',

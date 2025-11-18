@@ -1,0 +1,36 @@
+{
+  "deploy": {
+    "startCommand": "python manage.py runserver 0.0.0.0:$PORT",
+    "healthcheckPath": "/api/",
+    "healthcheckTimeout": 100,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  },
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "backend/Dockerfile"
+  },
+  "services": {
+    "backend": {
+      "source": "backend/",
+      "build": {
+        "builder": "DOCKERFILE",
+        "dockerfilePath": "backend/Dockerfile"
+      },
+      "deploy": {
+        "startCommand": "python manage.py runserver 0.0.0.0:$PORT",
+        "healthcheckPath": "/api/"
+      }
+    },
+    "frontend": {
+      "source": "frontend/",
+      "build": {
+        "builder": "NIXPACKS"
+      },
+      "deploy": {
+        "startCommand": "npm start",
+        "healthcheckPath": "/"
+      }
+    }
+  }
+}

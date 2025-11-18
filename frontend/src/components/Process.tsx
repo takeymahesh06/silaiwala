@@ -36,7 +36,7 @@ export function Process() {
             Our Process
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Simple, transparent, and efficient. Here's how we ensure your perfect fit.
+            Simple, transparent, and efficient. Here&rsquo;s how we ensure your perfect fit.
           </p>
         </div>
 

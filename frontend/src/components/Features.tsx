@@ -54,7 +54,7 @@ export function Features() {
             Why Choose SilaiWala?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We've revolutionized the tailoring industry with standardized processes, 
+            We&rsquo;ve revolutionized the tailoring industry with standardized processes, 
             transparent pricing, and guaranteed quality.
           </p>
         </div>

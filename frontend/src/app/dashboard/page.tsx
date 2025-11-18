@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   // const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
+  const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
 
   const getMockStats = useCallback((): DashboardStats => {
     if (user?.role === 'admin') {
@@ -87,7 +88,7 @@ export default function Dashboard() {
 
   const fetchDashboardStats = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/users/dashboard/stats/');
+      const response = await fetch(`${API_URL}/api/users/dashboard/stats/`);
       if (response.ok) {
         const data = await response.json();
         setStats(data);

@@ -11,7 +11,28 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'silaiwala-backend.onrender.com',
+    'silaiwala-backend-v3-production.up.railway.app',
+    'silaiwala-backend-production.up.railway.app',
+    'silaiwala-frontend-new-production.up.railway.app',
+    'silaiwala-frontend-docker-production.up.railway.app',
+    'swaruchii.com',
+    'www.swaruchii.com',
     '.onrender.com',
+    '*.railway.app',
+]
+
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = [
+    'https://silaiwala-backend-v3-production.up.railway.app',
+    'https://silaiwala-backend-production.up.railway.app',
+    'https://silaiwala-frontend-new-production.up.railway.app',
+    'https://silaiwala-frontend-docker-production.up.railway.app',
+    'https://silaiwala-backend.onrender.com',
+    'https://silaiwala.onrender.com',
+    'https://swaruchii.com',
+    'https://www.swaruchii.com',
+    'http://localhost:3000',
+    'http://localhost:8000',
 ]
 
 # Database configuration for production
@@ -33,6 +54,12 @@ REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 CORS_ALLOWED_ORIGINS = [
     "https://silaiwala-frontend.onrender.com",
     "https://silaiwala.onrender.com",
+    "https://silaiwala-frontend-new-production.up.railway.app",
+    "https://silaiwala-frontend-docker-production.up.railway.app",
+    "https://silaiwala-backend-production.up.railway.app",
+    "https://silaiwala-backend-v3-production.up.railway.app",
+    "https://swaruchii.com",
+    "https://www.swaruchii.com",
 ]
 
 # Static files configuration

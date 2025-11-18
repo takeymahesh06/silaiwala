@@ -1,85 +1,62 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Phone, Lock, ArrowRight, Loader2, AlertCircle, Scissors } from 'lucide-react';
+import { Scissors, Eye, EyeOff } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 
-export default function TailorLoginPage() {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
+export default function TailorLogin() {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const router = useRouter();
 
-  const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL || 'http://localhost:8000';
-
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-
-    try {
-      const response = await fetch(`${API_URL}/api/users/auth/otp/send/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phone_number: phoneNumber, otp_type: 'login' }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setOtpSent(true);
-        setMessage(data.message || 'OTP sent to your phone number.');
-      } else {
-        setError(data.error || 'Failed to send OTP. Please try again.');
-      }
-    } catch (err) {
-      console.error('Error sending OTP:', err);
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setMessage(null);
+    setError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/users/auth/otp/verify/`, {
+      const response = await apiRequest('/api/users/auth/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ phone_number: phoneNumber, otp_code: otpCode, otp_type: 'login' }),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Check if user is a tailor
-        if (data.user.role !== 'tailor') {
-          setError('This login is only for tailors. Please use the customer login page.');
-          return;
-        }
-        
+        // Store authentication data
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        setMessage('Login successful! Redirecting...');
-        router.push('/dashboard');
+        
+        // Redirect based on user role
+        if (data.user.role === 'tailor') {
+          router.push('/tailor/dashboard');
+        } else if (data.user.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
-        setError(data.error || 'Failed to verify OTP. Please try again.');
+        setError(data.detail || 'Login failed. Please check your credentials.');
       }
-    } catch (err) {
-      console.error('Error verifying OTP:', err);
+    } catch (error) {
+      console.error('Login error:', error);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -87,138 +64,116 @@ export default function TailorLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-            <Scissors className="h-6 w-6 text-green-600" />
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center">
+          <div className="bg-green-100 p-3 rounded-full">
+            <Scissors className="h-12 w-12 text-green-600" />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {otpSent ? 'Verify OTP' : 'Tailor Login'}
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            {!otpSent ? 'Login to your tailor account' : 'Enter the OTP sent to your phone'}
-          </p>
-          <p className="mt-1 text-center text-xs text-gray-500">
-            Or{' '}
-            <Link href="/auth/customer-login" className="font-medium text-blue-600 hover:text-blue-500">
-              login as a customer
-            </Link>
-            {' '}or{' '}
-            <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500">
-              create a new account
-            </Link>
-          </p>
         </div>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Tailor Login
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Sign in to your tailor dashboard
+        </p>
+      </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <AlertCircle className="inline h-5 w-5 mr-2" />
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
-        {message && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{message}</span>
-          </div>
-        )}
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
 
-        {!otpSent ? (
-          <form className="mt-8 space-y-6" onSubmit={handleSendOtp}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="phone-number" className="sr-only">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Phone className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="phone-number"
-                    name="phone-number"
-                    type="tel"
-                    autoComplete="tel"
-                    required
-                    className="input pl-10"
-                    placeholder="Phone Number (e.g., +919876543210)"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <div className="mt-1">
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter your username"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
               </div>
             </div>
 
             <div>
               <button
                 type="submit"
-                className="btn btn-primary btn-lg w-full flex justify-center items-center"
                 disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                ) : (
-                  <ArrowRight className="h-5 w-5 mr-2" />
-                )}
-                Send OTP
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
           </form>
-        ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="otp-code" className="sr-only">
-                  OTP Code
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="otp-code"
-                    name="otp-code"
-                    type="text"
-                    autoComplete="one-time-code"
-                    required
-                    className="input pl-10"
-                    placeholder="Enter OTP"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    disabled={loading}
-                    maxLength={6}
-                  />
-                </div>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Demo Credentials</span>
               </div>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg w-full flex justify-center items-center"
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                ) : (
-                  <ArrowRight className="h-5 w-5 mr-2" />
-                )}
-                Verify OTP & Login
-              </button>
+            <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Test with these credentials:</p>
+              <div className="text-sm">
+                <p><strong>Username:</strong> tailor1</p>
+                <p><strong>Password:</strong> tailor123</p>
+              </div>
             </div>
-            <div className="text-sm text-center">
-              <button
-                type="button"
-                onClick={handleSendOtp}
-                className="font-medium text-blue-600 hover:text-blue-500"
-                disabled={loading}
-              >
-                Resend OTP
-              </button>
-            </div>
-          </form>
-        )}
+          </div>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Not a tailor?{' '}
+              <a href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
+                Customer Login
+              </a>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

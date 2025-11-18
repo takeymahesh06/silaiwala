@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, Shield } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 
 interface User {
   id: number;
@@ -46,7 +47,7 @@ export default function AuthGuard({
       // const parsedUser = JSON.parse(userData);
 
       // Verify token with backend
-      const response = await fetch('http://localhost:8000/api/users/users/me/', {
+      const response = await apiRequest('/api/users/users/me/', {
         headers: {
           'Authorization': `Token ${authToken}`,
           'Content-Type': 'application/json',

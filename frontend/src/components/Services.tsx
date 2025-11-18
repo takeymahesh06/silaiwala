@@ -1,38 +1,129 @@
 import Link from 'next/link'
-import { Shirt, Scissors, Zap, Award } from 'lucide-react'
+import { Shirt, Scissors, Zap, Award, Users, Baby, Crown, Heart } from 'lucide-react'
 
-const services = [
+const mainServices = [
+  {
+    icon: Users,
+    title: "Women's Wear",
+    description: 'Comprehensive tailoring services for women - from everyday wear to special occasions.',
+    href: '/book',
+    color: 'bg-pink-100',
+    iconColor: 'text-pink-600'
+  },
   {
     icon: Shirt,
-    title: 'Shirts',
-    description: 'Custom-fitted shirts for men and women with premium fabrics and precise measurements.',
-    price: 'Starting from ₹800',
-    features: ['Custom measurements', 'Premium fabrics', 'Perfect fit guarantee'],
-    href: '/services/shirts'
+    title: "Men's Wear",
+    description: 'Professional tailoring for men - formal wear, ethnic wear, and custom fittings.',
+    href: '/book',
+    color: 'bg-blue-100',
+    iconColor: 'text-blue-600'
   },
   {
-    icon: Scissors,
-    title: 'Blouses',
-    description: 'Elegant blouses tailored to perfection with attention to detail and comfort.',
-    price: 'Starting from ₹600',
-    features: ['Design consultation', 'Quality materials', 'Timely delivery'],
-    href: '/services/blouses'
+    icon: Baby,
+    title: "Kids' Wear",
+    description: 'Custom kids clothing and uniforms designed for comfort and style.',
+    href: '/book',
+    color: 'bg-green-100',
+    iconColor: 'text-green-600'
+  }
+]
+
+const womenServices = [
+  {
+    title: 'Alteration Work',
+    description: 'Button, zip, hook, or lining replacement — quick and precise, Add padding, shape adjustments, or fancy piping for a designer touch.',
+    cta: 'Alteration & Repair work',
+    href: '/book'
   },
   {
-    icon: Zap,
+    title: 'Blouse Stitching',
+    description: 'Tailored to perfection — padded, non-padded, or fully lined.',
+    cta: 'Book Blouse Stitching',
+    href: '/book'
+  },
+  {
+    title: 'Lehenga & Skirts',
+    description: 'Custom-fit lehengas with can-can, panels. Designed for every celebration.',
+    cta: 'Get Custom Lehenga',
+    href: '/book'
+  },
+  {
+    title: 'Salwar & Kurtis',
+    description: 'Made-to-measure kurtis, salwars, and dupatta finishing. Choose from classic, Anarkali, or Indo-western styles.',
+    cta: 'Stitch My Outfit',
+    href: '/book'
+  },
+  {
+    title: 'Gowns & Dresses',
+    description: 'Western and Indo-western gowns crafted with precision — perfect fit, flow, and finish.',
+    cta: 'Design My Gown',
+    href: '/book'
+  },
+  {
+    title: 'Trousers',
+    description: 'Corporate trousers to normal pants.',
+    cta: 'Stitch my trouser',
+    href: '/book'
+  },
+  {
+    title: 'Saree Services',
+    description: 'From saree fall and pico to pre-stitched drapes and blouse attachment — we handle it all.',
+    cta: 'Fix My Saree',
+    href: '/book'
+  },
+  {
+    title: 'Bridal & Occasion Wear',
+    description: 'Couture craftsmanship for your big day — bridal lehengas, gowns, or sherwanis.',
+    cta: 'Start Bridal Project',
+    href: '/book'
+  },
+  {
+    title: 'Couture Finishing',
+    description: 'Luxury Couture work, designer pieces.',
+    cta: 'Get Luxury Finish',
+    href: '/book'
+  }
+]
+
+const menServices = [
+  {
+    title: 'Shirt Stitching',
+    description: 'Formal or casual shirts tailored to your fit and fabric — perfect collars, cuffs, and detailing.',
+    cta: 'Book Shirt Stitching',
+    href: '/book'
+  },
+  {
+    title: 'Trousers & Pants',
+    description: 'Professional finishing with elastic, zip, or hook closures. Choose formal, chinos, or casual fits.',
+    cta: 'Order Custom Trousers',
+    href: '/book'
+  },
+  {
+    title: 'Ethnic Wear',
+    description: 'Classic kurtas, pathanis, sherwanis, and Nehru jackets — bespoke tailoring for every occasion.',
+    cta: 'Stitch Ethnic Wear',
+    href: '/book'
+  },
+  {
     title: 'Alterations',
-    description: 'Professional alteration services to make your existing clothes fit perfectly.',
-    price: 'Starting from ₹200',
-    features: ['Quick turnaround', 'Expert craftsmanship', 'Affordable pricing'],
-    href: '/services/alterations'
+    description: 'Perfect fit guaranteed — waist, sleeves, tapering, zips, or re-stitching.',
+    cta: 'Alter My Clothes',
+    href: '/book'
+  }
+]
+
+const kidsServices = [
+  {
+    title: 'Custom Kidswear',
+    description: 'From playful frocks to ethnic sets — made for comfort, movement, and style.',
+    cta: 'Order Kids Outfit',
+    href: '/book'
   },
   {
-    icon: Award,
-    title: 'Designer Wear',
-    description: 'High-end designer pieces with intricate work and premium finishing.',
-    price: 'Starting from ₹2000',
-    features: ['Designer consultation', 'Premium materials', 'Luxury finishing'],
-    href: '/services/designer'
+    title: 'Uniforms',
+    description: 'School and activity uniforms with long-lasting stitches and perfect fits.',
+    cta: 'Book Uniform Stitching',
+    href: '/book'
   }
 ]
 
@@ -50,52 +141,119 @@ export function Services() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {services.map((service, index) => {
+        {/* Main Service Categories */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {mainServices.map((service, index) => {
             const Icon = service.icon
             return (
-              <div key={index} className="card p-6 hover:shadow-lg transition-shadow duration-300">
-                <div className="text-center mb-6">
-                  <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {service.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {service.description}
-                  </p>
-                  <p className="text-lg font-bold text-blue-600 mb-4">
-                    {service.price}
-                  </p>
+              <div key={index} className="card p-8 hover:shadow-lg transition-shadow duration-300 text-center">
+                <div className={`${service.color} w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6`}>
+                  <Icon className={`h-10 w-10 ${service.iconColor}`} />
                 </div>
-
-                <ul className="space-y-2 mb-6">
-                  {service.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-sm text-gray-600">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  {service.title}
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {service.description}
+                </p>
                 <Link
                   href={service.href}
-                  className="btn btn-primary btn-md w-full"
+                  className="btn btn-primary btn-lg w-full"
                 >
-                  Learn More
+                  Book Appointment
                 </Link>
               </div>
             )
           })}
         </div>
 
-        <div className="text-center mt-12">
+        {/* Detailed Services */}
+        <div className="space-y-16">
+          {/* Women's Wear Services */}
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+              <Users className="inline h-8 w-8 text-pink-600 mr-3" />
+              Women&rsquo;s Wear Services
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {womenServices.map((service, index) => (
+                <div key={index} className="card p-6 hover:shadow-lg transition-shadow duration-300">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                    {service.title}
+                  </h4>
+                  <p className="text-gray-600 mb-4 text-sm">
+                    {service.description}
+                  </p>
+                  <Link
+                    href={service.href}
+                    className="btn btn-outline btn-sm w-full"
+                  >
+                    {service.cta}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Men's Wear Services */}
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+              <Shirt className="inline h-8 w-8 text-blue-600 mr-3" />
+              Men&rsquo;s Wear Services
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {menServices.map((service, index) => (
+                <div key={index} className="card p-6 hover:shadow-lg transition-shadow duration-300">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                    {service.title}
+                  </h4>
+                  <p className="text-gray-600 mb-4 text-sm">
+                    {service.description}
+                  </p>
+                  <Link
+                    href={service.href}
+                    className="btn btn-outline btn-sm w-full"
+                  >
+                    {service.cta}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Kids' Wear Services */}
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+              <Baby className="inline h-8 w-8 text-green-600 mr-3" />
+              Kids&rsquo; Wear Services
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {kidsServices.map((service, index) => (
+                <div key={index} className="card p-6 hover:shadow-lg transition-shadow duration-300">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                    {service.title}
+                  </h4>
+                  <p className="text-gray-600 mb-4 text-sm">
+                    {service.description}
+                  </p>
+                  <Link
+                    href={service.href}
+                    className="btn btn-outline btn-sm w-full"
+                  >
+                    {service.cta}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center mt-16">
           <Link
-            href="/services"
-            className="btn btn-outline btn-lg"
+            href="/book"
+            className="btn btn-primary btn-lg"
           >
-            View All Services
+            Book Your Appointment Now
           </Link>
         </div>
       </div>

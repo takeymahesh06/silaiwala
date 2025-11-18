@@ -16,6 +16,7 @@ import {
   Activity
 } from 'lucide-react';
 import AuthGuard from '@/components/AuthGuard';
+import { apiRequest } from '@/lib/api';
 
 interface AdminStats {
   total_users: number;
@@ -42,27 +43,69 @@ export default function AdminDashboard() {
     revenue: 0
   });
   const [loading, setLoading] = useState(true);
+interface AdminUser {
+  id: number;
+  role: 'admin' | 'staff' | 'tailor' | 'customer';
+  is_superuser?: boolean;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+}
+
+const [user, setUser] = useState<AdminUser | null>(null);
   const router = useRouter();
+
+  // Debug router availability
+  useEffect(() => {
+    console.log('Router available:', !!router);
+  }, [router]);
 
   useEffect(() => {
     fetchStats();
+    fetchUser();
   }, []);
+
+  const fetchUser = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      if (token) {
+        const response = await apiRequest('/api/users/users/me/', {
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (response.ok) {
+          const userData: AdminUser = await response.json();
+          setUser(userData);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    }
+  };
 
   const fetchStats = async () => {
     try {
       // Fetch user stats
-      const userResponse = await fetch('http://localhost:8000/api/users/dashboard/stats/');
+      const userResponse = await apiRequest('/api/users/dashboard/stats/');
       const userData = userResponse.ok ? await userResponse.json() : {};
       
       // Fetch appointment stats
-      const appointmentResponse = await fetch('http://localhost:8000/api/appointments/appointments/');
+      const appointmentResponse = await apiRequest('/api/appointments/appointments/');
       const appointmentData = appointmentResponse.ok ? await appointmentResponse.json() : { results: [] };
+      type AppointmentRecord = { status?: string };
+      const appointmentResults: AppointmentRecord[] = Array.isArray(appointmentData?.results)
+        ? appointmentData.results
+        : Array.isArray(appointmentData)
+          ? appointmentData
+          : [];
       
       // Mock additional stats
       const mockStats = {
-        total_appointments: appointmentData.results?.length || 0,
-        pending_appointments: appointmentData.results?.filter((a: any) => a.status === 'pending').length || 0,
-        completed_appointments: appointmentData.results?.filter((a: any) => a.status === 'completed').length || 0,
+        total_appointments: appointmentResults.length,
+        pending_appointments: appointmentResults.filter((appointment) => appointment.status === 'pending').length,
+        completed_appointments: appointmentResults.filter((appointment) => appointment.status === 'completed').length,
         total_orders: 45,
         revenue: 125000
       };
@@ -176,7 +219,7 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your business.</p>
+              <p className="text-gray-600 mt-1">Welcome back! Here&rsquo;s what&rsquo;s happening with your business.</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
@@ -214,12 +257,29 @@ export default function AdminDashboard() {
 
         {/* Admin Sections */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {adminSections.map((section, index) => {
+          {adminSections
+            .filter(section => {
+              // Only show User Management to admin users
+              if (section.href === '/admin/users') {
+                return user?.role === 'admin' || user?.is_superuser;
+              }
+              return true;
+            })
+            .map((section, index) => {
             const Icon = section.icon;
             return (
               <div
                 key={index}
-                onClick={() => router.push(section.href)}
+                onClick={() => {
+                  console.log('Navigating to:', section.href);
+                  try {
+                    router.push(section.href);
+                  } catch (error) {
+                    console.error('Navigation error:', error);
+                    // Fallback to window.location
+                    window.location.href = section.href;
+                  }
+                }}
                 className="card bg-white p-6 cursor-pointer hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-center justify-between mb-4">

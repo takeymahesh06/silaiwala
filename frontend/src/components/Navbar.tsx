@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Menu, X, Scissors, User, LogOut, ChevronDown } from 'lucide-react'
+import { Menu, X, Scissors, User, LogOut, ChevronDown, Smartphone } from 'lucide-react'
 
 interface User {
   id: number;
@@ -61,9 +61,11 @@ export function Navbar() {
     { name: 'About', href: '/about' },
   ]
 
-  // Add admin link if user is admin
+  // Add role-specific links
   if (user?.role === 'admin') {
     navigation.push({ name: 'Admin', href: '/admin' })
+  } else if (user?.role === 'tailor') {
+    navigation.push({ name: 'Tailor Dashboard', href: '/tailor/dashboard' })
   }
 
   return (
@@ -135,6 +137,14 @@ export function Navbar() {
                       >
                         <Scissors className="h-4 w-4 mr-2" />
                         Tailor Login
+                      </Link>
+                      <Link
+                        href="/auth/otp-login"
+                        className="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                        onClick={() => setShowLoginDropdown(false)}
+                      >
+                        <Smartphone className="h-4 w-4 mr-2" />
+                        OTP Login
                       </Link>
                       <Link
                         href="/auth/admin-login"
@@ -225,6 +235,14 @@ export function Navbar() {
                   >
                     <Scissors className="h-5 w-5" />
                     <span>Tailor Login</span>
+                  </Link>
+                  <Link
+                    href="/auth/otp-login"
+                    className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Smartphone className="h-5 w-5" />
+                    <span>OTP Login</span>
                   </Link>
                   <Link
                     href="/auth/admin-login"

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, User, Phone, Mail, MapPin, Scissors, Filter, Search, Eye, Edit, Trash2, Plus } from 'lucide-react';
+import { Calendar, Clock, User, Scissors, Search, Eye, Edit, Trash2, Plus } from 'lucide-react';
 import AuthGuard from '@/components/AuthGuard';
+import { apiRequest } from '@/lib/api';
 
 interface Appointment {
   id: number;
@@ -44,34 +45,43 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/appointments/appointments/');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const response = await apiRequest('/api/appointments/appointments/', {
+          headers: {
+            'Authorization': token ? `Token ${token}` : '',
+          },
+        });
         if (response.ok) {
           const data = await response.json();
           // Transform the API data to match our interface
-          const transformedAppointments = data.results?.map((appointment: any) => ({
-            id: appointment.id,
-            customer_name: appointment.customer?.name || 'N/A',
-            customer_email: appointment.customer?.email || 'N/A',
-            customer_phone: appointment.customer?.phone || 'N/A',
-            service: appointment.service?.name || 'N/A',
-            appointment_date: appointment.scheduled_date,
-            appointment_time: appointment.scheduled_time,
-            address: appointment.customer?.address || '',
-            notes: appointment.notes || '',
-            status: appointment.status || 'pending',
-            created_at: appointment.created_at
-          })) || [];
+          const list = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+          const transformedAppointments = list.map((appointment: Record<string, unknown>) => {
+            const customer = appointment.customer as Record<string, unknown> || {};
+            const service = appointment.service as Record<string, unknown> || {};
+            
+            return {
+              id: appointment.id as number,
+              customer_name: (appointment.customer_name as string) || (customer.name as string) || 'N/A',
+              customer_email: (appointment.customer_email as string) || (customer.email as string) || 'N/A',
+              customer_phone: (appointment.customer_phone as string) || (customer.phone as string) || 'N/A',
+              service: (appointment.service_name as string) || (service.name as string) || 'N/A',
+              appointment_date: (appointment.appointment_date as string) || (appointment.scheduled_date as string) || '',
+              appointment_time: (appointment.appointment_time as string) || (appointment.scheduled_time as string) || '',
+              address: (appointment.address as string) || (customer.address as string) || '',
+              notes: (appointment.notes as string) || '',
+              status: (appointment.status as Appointment['status']) || 'pending',
+              created_at: (appointment.created_at as string) || ''
+            };
+          });
           
           setAppointments(transformedAppointments);
         } else {
           console.error('Failed to fetch appointments');
-          // Fallback to mock data if API fails
-          setAppointments(getMockAppointments());
+          setAppointments([]);
         }
       } catch (error) {
         console.error('Error fetching appointments:', error);
-        // Fallback to mock data if API fails
-        setAppointments(getMockAppointments());
+        setAppointments([]);
       } finally {
         setLoading(false);
       }
@@ -80,60 +90,7 @@ export default function AdminDashboard() {
     fetchAppointments();
   }, []);
 
-  const getMockAppointments = (): Appointment[] => [
-    {
-      id: 1,
-      customer_name: 'Rajesh Kumar',
-      customer_email: 'rajesh@example.com',
-      customer_phone: '+91 98765 43210',
-      service: 'Shirt Tailoring',
-      appointment_date: '2024-10-22',
-      appointment_time: '10:00 AM',
-      address: '123 MG Road, Bangalore',
-      notes: 'Need formal shirt for office',
-      status: 'confirmed',
-      created_at: '2024-10-19T10:30:00Z'
-    },
-    {
-      id: 2,
-      customer_name: 'Priya Sharma',
-      customer_email: 'priya@example.com',
-      customer_phone: '+91 98765 43211',
-      service: 'Blouse Tailoring',
-      appointment_date: '2024-10-23',
-      appointment_time: '02:00 PM',
-      address: '456 Brigade Road, Bangalore',
-      notes: 'Designer blouse for wedding',
-      status: 'pending',
-      created_at: '2024-10-19T11:15:00Z'
-    },
-    {
-      id: 3,
-      customer_name: 'Amit Patel',
-      customer_email: 'amit@example.com',
-      customer_phone: '+91 98765 43212',
-      service: 'Suit Tailoring',
-      appointment_date: '2024-10-21',
-      appointment_time: '11:00 AM',
-      address: '789 Koramangala, Bangalore',
-      notes: 'Business suit for interview',
-      status: 'completed',
-      created_at: '2024-10-18T14:20:00Z'
-    },
-    {
-      id: 4,
-      customer_name: 'Sunita Reddy',
-      customer_email: 'sunita@example.com',
-      customer_phone: '+91 98765 43213',
-      service: 'Alteration',
-      appointment_date: '2024-10-24',
-      appointment_time: '03:00 PM',
-      address: '321 Indiranagar, Bangalore',
-      notes: 'Dress alteration for party',
-      status: 'pending',
-      created_at: '2024-10-19T16:45:00Z'
-    }
-  ];
+  // No mock data; show empty state if API has no data
 
   const filteredAppointments = appointments.filter(appointment => {
     const matchesSearch = appointment.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -148,10 +105,12 @@ export default function AdminDashboard() {
   const handleStatusChange = async (id: number, newStatus: string) => {
     try {
       // Update status via API
-      const response = await fetch(`http://localhost:8000/api/appointments/appointments/${id}/`, {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const response = await apiRequest(`/api/appointments/appointments/${id}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': token ? `Token ${token}` : '',
         },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -197,6 +156,64 @@ export default function AdminDashboard() {
 
   const stats = getStats();
 
+  const handleCreateOrder = async (appointmentId: number) => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const res = await apiRequest(`/api/appointments/appointments/${appointmentId}/create_order/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token ? `Token ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        alert(`Failed to create order: ${errorData.detail || 'Unknown error'}`);
+        return;
+      }
+      const data = await res.json();
+      alert(`Order created successfully! Order ID: ${data.order_id || 'N/A'}`);
+    } catch (e) {
+      console.error('Error creating order:', e);
+      alert('Failed to create order. Please try again.');
+    }
+  };
+
+  const handleDeleteAppointment = async (appointmentId: number) => {
+    if (!confirm('Are you sure you want to delete this appointment? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const res = await apiRequest(`/api/appointments/appointments/${appointmentId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token ? `Token ${token}` : '',
+        }
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        alert(`Failed to delete appointment: ${errorData.detail || 'Unknown error'}`);
+        return;
+      }
+      
+      // Remove from local state
+      setAppointments(prev => prev.filter(appointment => appointment.id !== appointmentId));
+      alert('Appointment deleted successfully!');
+    } catch (e) {
+      console.error('Error deleting appointment:', e);
+      alert('Failed to delete appointment. Please try again.');
+    }
+  };
+
+  const handleEditAppointment = (appointment: Appointment) => {
+    // For now, just show the modal with edit option
+    setSelectedAppointment(appointment);
+    setShowModal(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -219,7 +236,10 @@ export default function AdminDashboard() {
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
               <p className="text-gray-600 mt-1">Manage appointments and orders</p>
             </div>
-            <button className="btn btn-primary btn-md inline-flex items-center">
+            <button 
+              onClick={() => window.open('/book', '_blank')}
+              className="btn btn-primary btn-md inline-flex items-center"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Appointment
             </button>
@@ -380,10 +400,28 @@ export default function AdminDashboard() {
                         >
                           <Eye className="h-4 w-4" />
                         </button>
-                        <button className="text-green-600 hover:text-green-900">
+                        {appointment.status !== 'cancelled' && (
+                          <button
+                            onClick={() => handleCreateOrder(appointment.id)}
+                            className="text-purple-600 hover:text-purple-900"
+                            title="Create Order"
+                          >
+                            {/* plus icon from lucide-react already imported as Plus */}
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => handleEditAppointment(appointment)}
+                          className="text-green-600 hover:text-green-900"
+                          title="Edit Appointment"
+                        >
                           <Edit className="h-4 w-4" />
                         </button>
-                        <button className="text-red-600 hover:text-red-900">
+                        <button 
+                          onClick={() => handleDeleteAppointment(appointment.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete Appointment"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -481,7 +519,14 @@ export default function AdminDashboard() {
                 >
                   Close
                 </button>
-                <button className="btn btn-primary btn-md">
+                <button 
+                  onClick={() => {
+                    setShowModal(false);
+                    // For now, just show an alert. In a real app, you'd open an edit form
+                    alert('Edit functionality coming soon! For now, you can update the status using the dropdown in the table.');
+                  }}
+                  className="btn btn-primary btn-md"
+                >
                   Edit Appointment
                 </button>
               </div>

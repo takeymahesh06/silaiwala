@@ -1,0 +1,11 @@
+{
+  "deploy": {
+    "startCommand": "python manage.py runserver 0.0.0.0:$PORT",
+    "healthcheckPath": "/api/",
+    "healthcheckTimeout": 100
+  },
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  }
+}
