@@ -27,7 +27,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const router = useRouter();
 
@@ -51,7 +50,6 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setOtpSent(true);
         setStep('otp');
         setSuccess('OTP sent successfully!');
         setCountdown(60); // 60 seconds countdown
@@ -72,7 +70,8 @@ export default function RegisterPage() {
       } else {
         setError(data.error || 'Failed to send OTP');
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to send OTP:', err);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -135,7 +134,8 @@ export default function RegisterPage() {
       } else {
         setError(data.error || 'Invalid OTP');
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('OTP verification failed:', err);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -182,7 +182,8 @@ export default function RegisterPage() {
       } else {
         setError(data.error || 'Failed to resend OTP');
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to resend OTP:', err);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);

@@ -30,6 +30,21 @@ interface AdminStats {
   revenue: number;
 }
 
+interface DashboardUser {
+  id: number;
+  username: string;
+  role?: 'admin' | 'staff' | 'tailor' | 'customer';
+  is_superuser?: boolean;
+}
+
+type AppointmentSummary = {
+  status?: string;
+};
+
+type AppointmentApiResponse = {
+  results?: AppointmentSummary[];
+};
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats>({
     total_users: 0,
@@ -43,16 +58,7 @@ export default function AdminDashboard() {
     revenue: 0
   });
   const [loading, setLoading] = useState(true);
-interface AdminUser {
-  id: number;
-  role: 'admin' | 'staff' | 'tailor' | 'customer';
-  is_superuser?: boolean;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-}
-
-const [user, setUser] = useState<AdminUser | null>(null);
+  const [user, setUser] = useState<DashboardUser | null>(null);
   const router = useRouter();
 
   // Debug router availability
@@ -76,7 +82,7 @@ const [user, setUser] = useState<AdminUser | null>(null);
           }
         });
         if (response.ok) {
-          const userData: AdminUser = await response.json();
+          const userData: DashboardUser = await response.json();
           setUser(userData);
         }
       }
@@ -89,23 +95,20 @@ const [user, setUser] = useState<AdminUser | null>(null);
     try {
       // Fetch user stats
       const userResponse = await apiRequest('/api/users/dashboard/stats/');
-      const userData = userResponse.ok ? await userResponse.json() : {};
+      const userData: Partial<AdminStats> = userResponse.ok ? await userResponse.json() : {};
       
       // Fetch appointment stats
       const appointmentResponse = await apiRequest('/api/appointments/appointments/');
-      const appointmentData = appointmentResponse.ok ? await appointmentResponse.json() : { results: [] };
-      type AppointmentRecord = { status?: string };
-      const appointmentResults: AppointmentRecord[] = Array.isArray(appointmentData?.results)
+      const appointmentData: AppointmentApiResponse = appointmentResponse.ok ? await appointmentResponse.json() : {};
+      const appointments: AppointmentSummary[] = Array.isArray(appointmentData.results)
         ? appointmentData.results
-        : Array.isArray(appointmentData)
-          ? appointmentData
-          : [];
+        : [];
       
       // Mock additional stats
       const mockStats = {
-        total_appointments: appointmentResults.length,
-        pending_appointments: appointmentResults.filter((appointment) => appointment.status === 'pending').length,
-        completed_appointments: appointmentResults.filter((appointment) => appointment.status === 'completed').length,
+        total_appointments: appointments.length,
+        pending_appointments: appointments.filter((appointment) => appointment.status === 'pending').length,
+        completed_appointments: appointments.filter((appointment) => appointment.status === 'completed').length,
         total_orders: 45,
         revenue: 125000
       };
@@ -219,7 +222,7 @@ const [user, setUser] = useState<AdminUser | null>(null);
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600 mt-1">Welcome back! Here&rsquo;s what&rsquo;s happening with your business.</p>
+              <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your business.</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">

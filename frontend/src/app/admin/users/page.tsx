@@ -6,8 +6,6 @@ import {
   UserPlus, 
   Search, 
   Filter, 
-  Edit, 
-  Trash2, 
   Eye, 
   CheckCircle, 
   XCircle, 
@@ -58,12 +56,12 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [hasPermission, setHasPermission] = useState(true);
-  const apiBaseUrl = process.env.NEXT_PUBLIC_DJANGO_API_URL ?? 'http://localhost:8000';
+  const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
   
   const fetchUsers = useCallback(async () => {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const response = await fetch(`${apiBaseUrl}/api/users/users/`, {
+      const response = await fetch('http://localhost:8000/api/users/users/', {
         headers: {
           'Authorization': token ? `Token ${token}` : '',
           'Content-Type': 'application/json'
@@ -72,7 +70,7 @@ export default function UserManagement() {
       
       if (response.ok) {
         const data = await response.json();
-        setUsers(Array.isArray(data.results) ? data.results : data);
+        setUsers(data.results || []);
       } else if (response.status === 403) {
         console.error('Permission denied: Admin access required');
         setUsers([]);
@@ -87,11 +85,11 @@ export default function UserManagement() {
     } finally {
       setLoading(false);
     }
-  }, [apiBaseUrl]);
+  }, []);
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/api/users/dashboard/stats/`);
+      const response = await fetch('http://localhost:8000/api/users/dashboard/stats/');
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -102,7 +100,7 @@ export default function UserManagement() {
       console.error('Error fetching stats:', error);
       setStats(getMockStats());
     }
-  }, [apiBaseUrl]);
+  }, []);
 
   useEffect(() => {
     fetchUsers();
@@ -157,28 +155,28 @@ export default function UserManagement() {
     active_users: 22
   });
 
-  const handleUserAction = async (userId: number, action: string, data?: Record<string, unknown>) => {
+  const handleUserAction = async (userId: number, action: string, data?: Partial<UserData>) => {
     try {
-      let response: Response | undefined;
+      let response;
       
       switch (action) {
         case 'verify':
-          response = await fetch(`${apiBaseUrl}/api/users/users/${userId}/verify_user/`, {
+          response = await fetch(`${API_URL}/api/users/users/${userId}/verify_user/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
           });
           break;
         case 'deactivate':
-          response = await fetch(`${apiBaseUrl}/api/users/users/${userId}/deactivate_user/`, {
+          response = await fetch(`${API_URL}/api/users/users/${userId}/deactivate_user/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
           });
           break;
         case 'update':
-          response = await fetch(`${apiBaseUrl}/api/users/users/${userId}/`, {
+          response = await fetch(`${API_URL}/api/users/users/${userId}/`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: data ? JSON.stringify(data) : undefined
+            body: JSON.stringify(data)
           });
           break;
       }
@@ -193,6 +191,10 @@ export default function UserManagement() {
     } catch (error) {
       console.error(`Error ${action}ing user:`, error);
     }
+  };
+
+  const handleAddUserClick = () => {
+    console.info('Add user flow is not implemented yet.');
   };
 
   const getRoleIcon = (role: string) => {
@@ -251,7 +253,7 @@ export default function UserManagement() {
             <Shield className="h-8 w-8 text-red-600" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-4">You don&rsquo;t have permission to access user management.</p>
+          <p className="text-gray-600 mb-4">You don't have permission to access user management.</p>
           <p className="text-sm text-gray-500">Admin access is required to manage users.</p>
         </div>
       </div>
@@ -270,7 +272,7 @@ export default function UserManagement() {
               <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
             </div>
             <button
-              onClick={() => setShowCreateModal(true)}
+              onClick={handleAddUserClick}
               className="btn btn-primary btn-md"
             >
               <UserPlus className="h-4 w-4 mr-2" />

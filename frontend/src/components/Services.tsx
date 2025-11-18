@@ -173,7 +173,7 @@ export function Services() {
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
               <Users className="inline h-8 w-8 text-pink-600 mr-3" />
-              Women&rsquo;s Wear Services
+              Women's Wear Services
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {womenServices.map((service, index) => (
@@ -199,7 +199,7 @@ export function Services() {
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
               <Shirt className="inline h-8 w-8 text-blue-600 mr-3" />
-              Men&rsquo;s Wear Services
+              Men's Wear Services
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {menServices.map((service, index) => (
@@ -225,7 +225,7 @@ export function Services() {
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
               <Baby className="inline h-8 w-8 text-green-600 mr-3" />
-              Kids&rsquo; Wear Services
+              Kids' Wear Services
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               {kidsServices.map((service, index) => (

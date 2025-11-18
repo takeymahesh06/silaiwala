@@ -69,7 +69,7 @@ export function Team() {
                   </div>
                   <p className="text-gray-700 leading-relaxed">
                     At SilaiWala, we believe that every piece of clothing should tell a story. 
-                    Our founder Rutuja brings years of expertise in women&rsquo;s fashion, ensuring that 
+                    Our founder Rutuja brings years of expertise in women's fashion, ensuring that 
                     every garment we create reflects your unique style and personality.
                   </p>
                 </div>
