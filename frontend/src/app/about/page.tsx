@@ -2,7 +2,6 @@
 
 import { 
   Scissors, 
-  Award, 
   Users, 
   Clock, 
   MapPin, 

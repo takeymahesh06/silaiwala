@@ -102,7 +102,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [getMockStats]);
+  }, [API_URL, getMockStats]);
 
   useEffect(() => {
     // Get user from localStorage (set by AuthGuard or login)

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Package, 
   Clock, 
@@ -42,14 +42,10 @@ export default function TailorOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
       const response = await fetch(`${API_URL}/api/orders/orders/`);
       
       if (response.ok) {
@@ -66,7 +62,11 @@ export default function TailorOrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const getMockOrders = (): Order[] => [
     {

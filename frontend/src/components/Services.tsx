@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Shirt, Scissors, Zap, Award, Users, Baby, Crown, Heart } from 'lucide-react'
+import { Shirt, Users, Baby } from 'lucide-react'
 
 const mainServices = [
   {

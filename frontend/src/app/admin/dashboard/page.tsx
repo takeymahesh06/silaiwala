@@ -11,7 +11,6 @@ import {
   User,
   Briefcase,
   Crown,
-  BarChart3,
   TrendingUp,
   Activity
 } from 'lucide-react';

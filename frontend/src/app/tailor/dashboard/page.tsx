@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Scissors, 
@@ -13,16 +13,12 @@ import {
   User,
   Settings,
   LogOut,
-  Bell,
-  Ruler,
   Award,
   DollarSign,
   Target,
-  AlertCircle,
   Plus,
   Eye,
-  Edit,
-  MapPin
+  Edit
 } from 'lucide-react';
 import AuthGuard from '@/components/AuthGuard';
 
@@ -109,17 +105,15 @@ export default function TailorDashboard() {
   const router = useRouter();
   const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
 
-  useEffect(() => {
-    fetchTailorData();
-  }, []);
-
-  const fetchTailorData = async () => {
+  const fetchTailorData = useCallback(async () => {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
         router.push('/auth/login');
         return;
       }
+
+      let latestProfile: TailorProfile | null = null;
 
       // Fetch tailor profile
       const profileResponse = await fetch(`${API_URL}/api/users/tailor-profiles/my_profile/`, {
@@ -130,6 +124,7 @@ export default function TailorDashboard() {
 
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
+        latestProfile = profileData;
         setProfile(profileData);
       }
 
@@ -205,7 +200,7 @@ export default function TailorDashboard() {
           const currentMonth = new Date().getMonth();
           return orderDate.getMonth() === currentMonth;
         }).reduce((sum, o) => sum + o.total_amount, 0),
-        average_rating: profile?.rating || 4.8,
+        average_rating: latestProfile?.rating || 4.8,
         total_appointments: mockAppointments.length,
         upcoming_appointments: mockAppointments.filter(a => a.status === 'scheduled' || a.status === 'confirmed').length
       };
@@ -216,7 +211,11 @@ export default function TailorDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL, router]);
+
+  useEffect(() => {
+    fetchTailorData();
+  }, [fetchTailorData]);
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');

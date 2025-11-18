@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Ruler, 
   Save, 
   ArrowLeft, 
   CheckCircle, 
-  AlertCircle,
   User,
   Package,
   Calendar
@@ -73,14 +72,10 @@ export default function TailorMeasurementsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
 
-  useEffect(() => {
-    fetchAcceptedOrders();
-  }, []);
-
-  const fetchAcceptedOrders = async () => {
+  const fetchAcceptedOrders = useCallback(async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
       const response = await fetch(`${API_URL}/api/orders/orders/?status=accepted`);
       
       if (response.ok) {
@@ -96,7 +91,11 @@ export default function TailorMeasurementsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL]);
+
+  useEffect(() => {
+    fetchAcceptedOrders();
+  }, [fetchAcceptedOrders]);
 
   const getMockOrders = (): Order[] => [
     {
@@ -151,7 +150,6 @@ export default function TailorMeasurementsPage() {
   const handleSaveMeasurements = async () => {
     setSaving(true);
     try {
-      const API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL;
       const response = await fetch(`${API_URL}/api/orders/measurements/`, {
         method: 'POST',
         headers: {

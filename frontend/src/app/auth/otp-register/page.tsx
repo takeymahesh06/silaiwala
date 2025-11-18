@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Smartphone, ArrowLeft, Clock, RefreshCw, User, Mail } from 'lucide-react';
+import { Smartphone, ArrowLeft, Clock, RefreshCw } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 interface OTPResponse {
@@ -49,7 +49,6 @@ export default function OTPRegister() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [countdown, setCountdown] = useState(0);
-  const [otpVerified, setOtpVerified] = useState(false);
   const router = useRouter();
 
   // Countdown timer
@@ -141,7 +140,6 @@ export default function OTPRegister() {
 
       if (response.ok) {
         setSuccess('Phone number verified! Please complete your profile.');
-        setOtpVerified(true);
         setStep('details');
       } else {
         setError(data.error || 'Invalid OTP');
