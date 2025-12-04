@@ -28,14 +28,29 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  webpack(config) {
+  webpack(config, { dir }) {
     // Resolve alias for @ to src directory
-    // This matches tsconfig.json paths: "@/*": ["./src/*"]
-    const srcPath = path.resolve(process.cwd(), 'src');
+    // Use 'dir' parameter which Next.js provides - it's the project root directory
+    // In Amplify with appRoot: frontend, this will be the frontend directory
+    const srcPath = path.resolve(dir, 'src');
+    
+    // Ensure resolve object exists
+    if (!config.resolve) {
+      config.resolve = {};
+    }
+    
+    // Set up alias - webpack will handle @/lib/api -> src/lib/api
+    // Make sure to preserve existing aliases
+    const existingAlias = config.resolve.alias || {};
     config.resolve.alias = {
-      ...(config.resolve.alias || {}),
+      ...existingAlias,
       '@': srcPath,
     };
+    
+    // Ensure extensions are configured
+    if (!config.resolve.extensions) {
+      config.resolve.extensions = ['.tsx', '.ts', '.jsx', '.js', '.json'];
+    }
     
     return config;
   },
