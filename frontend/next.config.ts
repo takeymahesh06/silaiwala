@@ -29,7 +29,14 @@ const nextConfig: NextConfig = {
     ];
   },
   webpack(config) {
-    config.resolve.alias['@'] = path.resolve(__dirname, 'src');
+    // Resolve alias for @ to src directory
+    // This matches tsconfig.json paths: "@/*": ["./src/*"]
+    const srcPath = path.resolve(process.cwd(), 'src');
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@': srcPath,
+    };
+    
     return config;
   },
 };
